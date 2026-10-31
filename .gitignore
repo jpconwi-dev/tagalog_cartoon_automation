@@ -12,3 +12,7 @@ output/
 *.mp4
 *.wav
 *.db
+
+.env
+.env.*
+!.env.example
