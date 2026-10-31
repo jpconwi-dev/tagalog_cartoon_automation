@@ -37,6 +37,25 @@ class Settings(BaseSettings):
     huggingface_free_verified: bool = False
     grok_free_verified: bool = False
 
+    # --- provider routing / safety knobs ---
+    provider_timeout_seconds: float = 60.0
+    backoff_base_seconds: float = 1.0
+    backoff_max_seconds: float = 30.0
+    circuit_failure_threshold: int = 3
+    circuit_cooldown_seconds: int = 900
+    quota_cooldown_seconds: int = 21600
+    provider_min_interval_seconds: float = 6.0
+
+    # --- provider models/endpoints (no model defaults: models get deprecated) ---
+    cloudflare_model: str = ""
+    gemini_model: str = ""
+    huggingface_model: str = ""
+    huggingface_base_url: str = "https://router.huggingface.co/v1"
+    grok_model: str = ""
+    grok_base_url: str = "https://api.x.ai/v1"
+    local_model: str = ""
+    local_base_url: str = "http://localhost:11434/v1"
+
     def priority_list(self) -> list[str]:
         items = [p.strip().lower() for p in self.provider_priority.split(",") if p.strip()]
         return [p for p in items if p in PROVIDERS]

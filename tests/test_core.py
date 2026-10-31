@@ -24,6 +24,7 @@ def test_server_without_api_key_rejects(client, settings):
 
 def test_providers_hide_secrets_and_gate_on_free_verification(client, settings):
     settings.gemini_api_key = "AIzaSECRETSECRETSECRETSECRET"
+    settings.gemini_model = "some-model"
     r = client.get("/api/providers", headers=H)
     assert "SECRET" not in r.text
     gem = next(p for p in r.json() if p["name"] == "gemini")

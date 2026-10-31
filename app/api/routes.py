@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from app.core.config import PROVIDERS, Settings, get_settings
+from app.core.config import Settings, get_settings
 from app.core.security import require_api_key
 from app.db.session import get_session
 from app.models.tables import Job
 from app.schemas.api import (HealthResponse, JobResponse, ProviderInfo,
                              StatusResponse, VideoGenerateRequest)
 from app.services import job_service
+from app.services.providers.eligibility import check_eligibility, effective_priority
 
 public = APIRouter()
 router = APIRouter(prefix="/api", dependencies=[Depends(require_api_key)])
@@ -30,25 +31,14 @@ def api_status(session: Session = Depends(get_session), s: Settings = Depends(ge
                           jobs_total=len(jobs), jobs_by_status=by_status)
 
 
-def _provider_state(s: Settings, name: str) -> ProviderInfo:
-    if name == "template":
-        return ProviderInfo(name=name, configured=True, free_verified=True, eligible=True)
-    if name == "local":
-        return ProviderInfo(name=name, configured=False, free_verified=True, eligible=False)
-    configured = {
-        "cloudflare": bool(s.cloudflare_account_id and s.cloudflare_api_token),
-        "gemini": bool(s.gemini_api_key),
-        "huggingface": bool(s.huggingface_api_key),
-        "grok": bool(s.grok_api_key),
-    }[name]
-    verified = getattr(s, f"{name}_free_verified")
-    eligible = configured and (verified or not s.free_only)
-    return ProviderInfo(name=name, configured=configured, free_verified=verified, eligible=eligible)
-
-
 @router.get("/providers", response_model=list[ProviderInfo])
 def providers(s: Settings = Depends(get_settings)):
-    return [_provider_state(s, n) for n in s.priority_list()]
+    out = []
+    for name in effective_priority(s):
+        e = check_eligibility(s, name)
+        out.append(ProviderInfo(name=name, configured=e.configured, free_verified=e.free_verified,
+                                eligible=e.eligible, reason=e.reason))
+    return out
 
 
 @router.post("/videos/generate", response_model=JobResponse, status_code=status.HTTP_202_ACCEPTED)

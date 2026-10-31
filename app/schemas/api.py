@@ -13,6 +13,7 @@ class ProviderInfo(BaseModel):
     configured: bool
     free_verified: bool
     eligible: bool
+    reason: str = ""
 
 
 class StatusResponse(BaseModel):

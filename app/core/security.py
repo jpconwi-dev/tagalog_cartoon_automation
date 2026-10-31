@@ -7,7 +7,7 @@ from app.core.config import Settings, get_settings
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 _SECRET_PATTERNS = [
-        re.compile(r"(?i)(api[_-]?key|token|secret|password|authorization)(\"?\s*[:=]\s*\"?)((?:bearer\s+)?[^\s\",}]+)"),
+    re.compile(r"(?i)(api[_-]?key|token|secret|password|authorization)(\"?\s*[:=]\s*\"?)((?:bearer\s+)?[^\s\",}]+)"),
     re.compile(r"(?i)bearer\s+[a-z0-9\-._~+/]+=*"),
     re.compile(r"AIza[0-9A-Za-z_\-]{20,}"),
 ]
