@@ -1,0 +1,14 @@
+.env
+*.pem
+client_secret*.json
+token*.json
+youtube_token*
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+data/
+output/
+*.mp4
+*.wav
+*.db
