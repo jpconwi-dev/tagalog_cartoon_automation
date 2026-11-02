@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 
 class TopicRequest(BaseModel):
     title: str = Field(min_length=3, max_length=200)
+    subject: str | None = Field(default=None, max_length=120)  # short noun phrase used in sentences
     category: str = Field(default="general", max_length=80)
     key_points: list[str] = Field(default_factory=list, max_length=12)
     target_seconds: int = Field(default=240, ge=30, le=1800)

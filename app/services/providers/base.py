@@ -99,6 +99,7 @@ class LLMProvider(ABC):
         if doc.est_duration_seconds > limit:
             raise InvalidResponse(f"script too long ({doc.est_duration_seconds}s > {limit:.0f}s)")
         doc.provider = self.name
+        doc.is_template = False
         return doc
 
     async def generate_scene_plan(self, script: ScriptDoc) -> ScenePlan:

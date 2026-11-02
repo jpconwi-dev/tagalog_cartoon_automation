@@ -70,7 +70,7 @@ class AIRouter:
             delay = max(delay, err.retry_after)
         return min(delay, s.backoff_max_seconds)
 
-    async def run(self, task: str, arg: Any) -> RouterResult:
+    async def run(self, task: str, arg: Any, validate: Callable[[Any], None] | None = None) -> RouterResult:
         if task not in TASKS:
             raise ValueError(f"unknown task {task}")
         attempts: list[Attempt] = []
@@ -86,13 +86,13 @@ class AIRouter:
                 attempts.append(Attempt(name, False, "skipped", "marked misconfigured")); continue
             if self._clock() < st.open_until:
                 attempts.append(Attempt(name, False, "skipped", "cooling down")); continue
-            value = await self._try(name, provider, task, arg, attempts)
+            value = await self._try(name, provider, task, arg, attempts, validate)
             if value is not _FAIL:
                 return RouterResult(value, name, name == "template", attempts)
         summary = "; ".join(f"{a.provider}:{a.kind}" for a in attempts)
         raise NoProviderAvailable(f"no provider could complete {task} ({summary})")
 
-    async def _try(self, name, provider, task, arg, attempts):
+    async def _try(self, name, provider, task, arg, attempts, validate=None):
         s = self.settings
         st = self._st(name)
         max_attempts = 1 if name == "template" else 1 + s.max_retries_per_provider
@@ -106,6 +106,8 @@ class AIRouter:
             try:
                 value = await asyncio.wait_for(getattr(provider, task)(arg),
                                                timeout=s.provider_timeout_seconds + 5)
+                if validate is not None:
+                    validate(value)
             except asyncio.TimeoutError:
                 err: ProviderError = TransientError(f"{name} timed out")
             except ProviderError as e:

@@ -26,3 +26,15 @@ FREE_ONLY=true, ALLOW_PAID_FALLBACK=false (app refuses to start if both are true
 A provider is used only if credentials AND a model are set AND `<NAME>_FREE_VERIFIED=true`. Models are never
 defaulted because they get deprecated; pick one from the provider's current catalog that works on the free tier.
 `MAX_RETRIES_PER_PROVIDER=2` means 1 attempt + 2 retries. The template provider is always last.
+
+## Phase 3: scripts, topics, dedup, resumable runner
+- `app/templates/topics.json` is the topic bank (title, subject, category, key_points). Categories rotate
+  least-recently-used first; a topic is skipped if it is >= `TOPIC_SIMILARITY_THRESHOLD` similar to anything used.
+  When the bank runs out the job fails with a clear message: add more topics.
+- Every script is checked (length, Tagalog ratio, duplicate title, duration). Hard failures make the router retry or
+  fall back to the next provider. Soft issues (numbers not in your key points, no references) are saved as `warnings`.
+  The checks cannot prove facts are true: review AI-written scripts, and prefer topics that carry key_points.
+- Run the script stage: `python -m app.workers.daily_runner` (exit 0 done, 1 failed, 3 deferred/retry later).
+  It stops at status `generating_audio` until Phase 4 exists. Re-running never regenerates a saved script.
+- Keep `data/app.db` out of OneDrive/Dropbox-synced folders: sync clients can lock or corrupt SQLite files.
+- New table `script` is created automatically on startup. Existing tables are unchanged.

@@ -52,3 +52,20 @@ class ProviderEvent(SQLModel, table=True):
     ok: bool
     error: Optional[str] = None  # always stored redacted
     created_at: datetime = Field(default_factory=utcnow)
+
+
+class Script(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    job_id: Optional[int] = Field(default=None, index=True)
+    topic_title: str = Field(index=True)
+    category: str
+    title: str
+    provider: str
+    is_template: bool = False
+    warnings_json: str = "[]"
+    content_json: str
+    scene_plan_json: Optional[str] = None
+    plan_provider: Optional[str] = None
+    metadata_json: Optional[str] = None
+    metadata_provider: Optional[str] = None
+    created_at: datetime = Field(default_factory=utcnow)

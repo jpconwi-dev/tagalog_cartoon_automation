@@ -41,3 +41,23 @@ class JobResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     model_config = {"from_attributes": True}
+
+
+class ScriptSummary(BaseModel):
+    id: int
+    title: str
+    topic_title: str
+    category: str
+    provider: str
+    is_template: bool
+    warnings: list[str] = []
+    job_id: Optional[int] = None
+    created_at: datetime
+
+
+class ScriptDetail(ScriptSummary):
+    script: dict
+    scene_plan: Optional[dict] = None
+    metadata: Optional[dict] = None
+    plan_provider: Optional[str] = None
+    metadata_provider: Optional[str] = None

@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     local_model: str = ""
     local_base_url: str = "http://localhost:11434/v1"
 
+    # --- Phase 3: script quality ---
+    topic_similarity_threshold: float = 0.8
+    min_script_words: int = 40
+    min_tagalog_ratio: float = 0.10
+
     def priority_list(self) -> list[str]:
         items = [p.strip().lower() for p in self.provider_priority.split(",") if p.strip()]
         return [p for p in items if p in PROVIDERS]

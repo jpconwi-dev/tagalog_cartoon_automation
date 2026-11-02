@@ -21,23 +21,24 @@ class TemplateProvider:
 
     async def generate_script(self, req: TopicRequest) -> ScriptDoc:
         t = req.title
+        subj = req.subject or t
         pts = [p.strip() for p in req.key_points if p.strip()][:8]
         scenes: list[tuple[str, str, list[str]]] = [
-            (f"Alam mo ba kung ano talaga ang totoo tungkol sa {t}? Tara, alamin natin!",
+            (f"Alam mo ba kung ano talaga ang totoo tungkol sa {subj}? Tara, alamin natin!",
              "Juan scratches his head with a big question mark above him", ["juan"]),
         ]
         if pts:
             for i, p in enumerate(pts):
-                scenes.append((f"{_ORD[i]}, {p}", f"Mara explains point {i + 1} using a simple drawing", ["mara", "juan"]))
+                scenes.append((f"{_ORD[i]}, {p[:1].lower() + p[1:]}", f"Mara explains point {i + 1} using a simple drawing", ["mara", "juan"]))
         else:
             scenes += [
-                (f"Magsimula tayo sa isang tanong: ano nga ba ang {t}?", "Juan thinking with a thought bubble", ["juan"]),
+                (f"Magsimula tayo sa isang tanong: ano nga ba ang {subj}?", "Juan thinking with a thought bubble", ["juan"]),
                 ("Madalas, may kinalaman ito sa mga bagay na nakikita natin sa araw-araw na buhay.",
                  "Mara pointing at everyday objects on a table", ["mara"]),
                 ("Laging magtanong at magsaliksik sa mapagkakatiwalaang sanggunian para makasiguro.",
                  "Juan reading a big book with a magnifying glass", ["juan"]),
             ]
-        scenes.append((f"Kaya ayan, natutunan natin ang ilang mahahalagang bagay tungkol sa {t}.",
+        scenes.append((f"Kaya ayan, natutunan natin ang ilang mahahalagang bagay tungkol sa {subj}.",
                        "Juan and Mara waving at the viewer", ["juan", "mara"]))
         built = [Scene(narration=n, visual=v, characters=c, est_seconds=min(120.0, _secs(n)),
                        on_screen_text=t[:60] if i == 0 else None, transition="fade" if i % 3 == 2 else "cut")
@@ -45,7 +46,7 @@ class TemplateProvider:
         return ScriptDoc(
             title=t[:100], topic=t, category=req.category,
             hook=scenes[0][0],
-            introduction=f"Sa video na ito, pag-uusapan natin ang {t} sa simple at nakakatuwang paraan.",
+            introduction=f"Sa video na ito, pag-uusapan natin ang {subj} sa simple at nakakatuwang paraan.",
             scenes=built,
             conclusion="Sana may bago kang natutunan ngayong araw.",
             call_to_action="Kung nagustuhan mo ito, mag-like, mag-subscribe, at ibahagi sa kaibigan mo!",
